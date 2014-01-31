@@ -11,9 +11,6 @@ using namespace std;
 #define STATION_N 128
 #define SEAT_N 2048
 
-void generate_orders(Order *orders, unsigned int n) {
-}
-
 // A very simple random number generator.  Not especially good at
 // generating truly random bits, but good enough for our needs in this
 // package.
