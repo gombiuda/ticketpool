@@ -10,13 +10,18 @@ Train::Train(unsigned int id_, unsigned char station_number_, unsigned short sea
 	for (int i = 0; i < seat_number; i++) {
 		pool[i] = new unsigned char[station_number];
 	}
+	for (int i = 0; i < seat_number; i++) {
+		for (int j = 0; j < station_number; j++) {
+			pool[i][j] = station_number - j;
+		}
+	}
 }
 
 int Train::query(Order *order) {
 	order->seat = 0;
 	int length = order->to - order->from + 1;
 	for (int i = 0; i < seat_number; i++) {
-		if (pool[i][order->from] > length) {
+		if (pool[i][order->from] >= length) {
 			order->seat++;
 		}
 	}
@@ -28,7 +33,7 @@ int Train::book(Order *order) {
 	order->seat = -1;
 	// find available seat
 	for (int i = 0; i < seat_number; i++) {
-		if (pool[i][order->from] > length) {
+		if (pool[i][order->from] >= length) {
 			order->seat = i;
 			break;
 		}
