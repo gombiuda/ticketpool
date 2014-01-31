@@ -7,7 +7,7 @@ Train::Train(unsigned int id_, unsigned char station_number_, unsigned short sea
 	seat_number = seat_number_;
 	orders = new unordered_map<unsigned int, Order>();
 	pool = new unsigned char*[seat_number];
-	for (int i = 0; i < station_number; i++) {
+	for (int i = 0; i < seat_number; i++) {
 		pool[i] = new unsigned char[station_number];
 	}
 }
