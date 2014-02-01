@@ -14,7 +14,7 @@ RingBuffer::RingBuffer(unsigned int buffer_size_) {
 }
 
 Order* RingBuffer::get(long sequence) {
-	return entries + sequence & mask;
+	return entries + (sequence & mask);
 }
 
 long RingBuffer::next(int n) {

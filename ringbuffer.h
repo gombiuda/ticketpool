@@ -4,6 +4,8 @@
 #include "order.h"
 #include "util.h"
 
+using namespace std;
+
 class RingBuffer {
 public:
 	RingBuffer(unsigned int buffer_size);
@@ -16,4 +18,4 @@ private:
 	long cursor, next_cursor;
 	Order *entries;
 	unsigned int mask;
-}
+};
