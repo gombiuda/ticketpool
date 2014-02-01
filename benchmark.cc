@@ -7,9 +7,10 @@
 
 using namespace std;
 
-#define N 1<<16
+#define N 65536
 #define STATION_N 128
 #define SEAT_N 2048
+#define BILLION 1000000000
 
 // A very simple random number generator.  Not especially good at
 // generating truly random bits, but good enough for our needs in this
@@ -76,12 +77,10 @@ int main() {
 	Random rnd(301);
 	clock_gettime(CLOCK_REALTIME, &start);
 	for (unsigned int i = 0; i < N; i++) {
-		if (rnd.OneIn(5)) {
+		if (rnd.OneIn(10)) {
 			// refund
 			if (!success_orders.empty()) {
-				if (rnd.OneIn(2)) {
-					train->refund(success_orders.front());
-				}
+				train->refund(success_orders.front());
 				success_orders.pop();
 			}
 		} else if (rnd.OneIn(3)) {
@@ -95,6 +94,9 @@ int main() {
 		}
 	}
 	clock_gettime(CLOCK_REALTIME, &end);
-	cout << "Use time: " << (end.tv_sec - start.tv_sec) * 1000000000 + end.tv_nsec - start.tv_nsec << " ns" << endl;
+	double use_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double)BILLION;
+	cout << "Process " << N << " requests" << endl;
+	cout << "Use time: " << use_time << " s" << endl;
+	cout << "Request per second: " << N / use_time << endl;
 	return 0;
 }
