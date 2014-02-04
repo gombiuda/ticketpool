@@ -14,7 +14,7 @@ template<typename T> int Util::dump(char *buffer, int buf_size, T data, int n) {
 	int index = 0;
 	n -= 1;
 	while (n >= 0) {
-		if ((data >> (n * 8)) & 0xFF == 0xF6) {
+		if (((data >> (n * 8)) & 0xFF) == 0xF6) {
 			if (index > buf_size) {
 				return -1;
 			}

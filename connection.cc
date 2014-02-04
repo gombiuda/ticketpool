@@ -10,7 +10,6 @@ Connection::Connection(int fd_) : fd(fd_) {
 void Connection::handle(RingBuffer<Order> *ring) {
 	char *index;
 	int n;
-	char order[10];
 	char msg[50];
 	while (true) {
 		index = buffer->reserve(CHUNK_SIZE);
