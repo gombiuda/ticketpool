@@ -28,6 +28,9 @@ test_server: $(OBJS) test_server.o
 benchmark: $(OBJS) benchmark.o
 	g++ -pthread -o benchmark benchmark.o $(OBJS)
 
+benchmark_sequence: $(OBJS) benchmark_sequence.o
+	g++ -pthread -o benchmark_sequence benchmark_sequence.o $(OBJS)
+
 benchmark_train: $(OBJS) benchmark_train.o
 	g++ -o benchmark_train benchmark_train.o $(OBJS)
 

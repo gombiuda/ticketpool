@@ -9,4 +9,5 @@ private:
 	Sequence(long value);
 	static int INITIAL_VALUE;
 	long value;
+	long padding[7];  // avoid false sharing
 };
