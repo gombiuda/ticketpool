@@ -3,7 +3,7 @@
 Server::Server(const char* host_, int port_) : host(host_), port(port_) {
 	sequencer = new Sequencer(65536);
 	ring = new RingBuffer<Order>(sequencer);
-	train = new Train(0, 128, 512);
+	train = new Train(0, 64, 512);
 }
 
 void Server::start(int backlog) {

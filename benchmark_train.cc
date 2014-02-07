@@ -9,8 +9,8 @@
 using namespace std;
 
 #define N 65536
-#define STATION_N 128
-#define SEAT_N 2048
+#define STATION_N 64
+#define SEAT_N 512
 #define MILLION 1000000
 
 int main() {
@@ -45,8 +45,8 @@ int main() {
 	}
 	gettimeofday(&end, NULL);
 	double use_time = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / (double)MILLION;
-	cout << "Process " << N << " requests" << endl;
+	cout << "Process " << N << " operations" << endl;
 	cout << "Use time: " << use_time << " s" << endl;
-	cout << "Request per second: " << N / use_time << endl;
+	cout << "ops: " << (long)(N / use_time) << endl;
 	return 0;
 }

@@ -5,6 +5,7 @@
 #include "random.h"
 #include "order.h"
 #include "ringbuffer.h"
+#include "sequencer.h"
 
 using namespace std;
 
@@ -48,7 +49,8 @@ void consume(RingBuffer<Order> *ring, int n) {
 
 int main() {
 	struct timeval start, end;
-	RingBuffer<Order> *ring = new RingBuffer<Order>(65536);
+	Sequencer *sequencer = new Sequencer(65536);
+	RingBuffer<Order> *ring = new RingBuffer<Order>(sequencer);
 	gettimeofday(&start, NULL);
 	thread producer(produce, ring, N);
 	thread consumer(consume, ring, N);

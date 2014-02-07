@@ -46,7 +46,11 @@ void send_all(int c, int n, int *fds) {
 	Random rnd(301);
 	for (int i = 0; i < c; i++) {
 		for (int j = 0; j < n; j++) {
-			order.operation = 0x02;
+			if (rnd.OneIn(3)) {
+				order.operation = 0x02;
+			} else {
+				order.operation = 0x01;
+			}
 			order.id = (i << 8) + j;
 			order.from = rnd.next() % 128;
 			order.to = rnd.next() % 128 + order.from;
