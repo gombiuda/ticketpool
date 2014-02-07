@@ -6,6 +6,7 @@ class Util {
 public:
 	static int bitcount(unsigned int v);
 	static int checksum(char *data, int n);
+	static void print_array(char* data, int n);
 	template<typename T> static int dump(char *buffer, int buf_size, T data, int n);
 	template<typename T> static int parse(char *buffer, int buf_size, T &data, int n);
 };
@@ -15,6 +16,12 @@ template<typename T> int Util::dump(char *buffer, int buf_size, T data, int n) {
 	n -= 1;
 	while (n >= 0) {
 		if (((data >> (n * 8)) & 0xFF) == 0xF6) {
+			if (index > buf_size) {
+				return -1;
+			}
+			buffer[index++] = 0xF7;
+		}
+		if (((data >> (n * 8)) & 0xFF) == 0xF7) {
 			if (index > buf_size) {
 				return -1;
 			}

@@ -1,16 +1,19 @@
 #include <iostream>
 #include <thread>
+#include "sequencer.h"
 #include "ringbuffer.h"
 #include "order.h"
 
 using namespace std;
 
 int main() {
+	Sequencer *sequencer;
 	RingBuffer<Order> *ring;
 	Order *order;
 	long sequence;
 	// single next/modify/publish
-	ring = new RingBuffer<Order>(16);
+	sequencer = new Sequencer(16);
+	ring = new RingBuffer<Order>(sequencer);
 	sequence = ring->next(1);
 	order = ring->get(sequence);
 	order->id = 0;
@@ -24,7 +27,8 @@ int main() {
 		cout << "single next/get/publish...fail" << endl;
 	}
 	// multiple next/modify/publish
-	ring = new RingBuffer<Order>(4);
+	sequencer = new Sequencer(4);
+	ring = new RingBuffer<Order>(sequencer);
 	sequence = ring->next(10);
 	for (int i = sequence - (10 - 1); i <= sequence; i++) {
 		order = ring->get(sequence);

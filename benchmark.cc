@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 #include <unistd.h>
 #include <thread>
 #include <errno.h>
@@ -10,11 +11,12 @@
 #include <sys/time.h>
 #include "server.h"
 #include "random.h"
+#include "util.h"
 
 using namespace std;
 
-#define N 100
-#define C 100
+#define N 200
+#define C 50
 #define MILLION 1000000
 
 int monitor_all(int c, int *fds) {
@@ -39,11 +41,18 @@ int monitor_all(int c, int *fds) {
 	return epoll_fd;
 }
 
-void send_all(int c, int n, int *fds, int **sizes) {
-	char *data = "abcdefghijklmnopqrstuvwxyz";
+void send_all(int c, int n, int *fds) {
+	Order order;
+	Random rnd(301);
 	for (int i = 0; i < c; i++) {
 		for (int j = 0; j < n; j++) {
-			if (send(fds[i], data, sizes[i][j], 0) == -1) {
+			order.operation = 0x02;
+			order.id = (i << 8) + j;
+			order.from = rnd.next() % 128;
+			order.to = rnd.next() % 128 + order.from;
+			order.seat = -1;
+			order.dump();
+			if (send(fds[i], order.raw, order.rsize, 0) == -1) {
 				perror("send");
 				exit(1);
 			}
@@ -51,35 +60,63 @@ void send_all(int c, int n, int *fds, int **sizes) {
 	}
 }
 
-void recv_all(int epoll_fd, int c, int n, int *fds, int **sizes) {
-	int total = 0;
-	int BUFFER_SIZE = 1024;
-	struct epoll_event events[MAX_EPOLL_EVENTS];
-	char buffer[BUFFER_SIZE];
+void recv_all(int epoll_fd, int c, int n, int *fds) {
+	unordered_map<int, BipBuffer*> buffers;
 	for (int i = 0; i < c; i++) {
-		for (int j = 0; j < n; j++) {
-			total += sizes[i][j];
-		}
+		buffers.insert(make_pair(fds[i], new BipBuffer(10240)));
 	}
+	struct epoll_event events[MAX_EPOLL_EVENTS];
 	int ev_n;
+	int total = c * n;
+	Order *order = new Order();
+	int CHUNK_SIZE = 1024;
+	char *index;
 	while (total > 0) {
 		if ((ev_n = epoll_wait(epoll_fd, events, MAX_EPOLL_EVENTS, -1)) == -1) {
-			cout << "error when epoll wait: " << errno << endl;;
+			perror("epoll wait");
 			exit(1);
 		}
-		int ev_c;
 		for (int i = 0; i < ev_n; i++) {
+			BipBuffer *buffer = buffers[events[i].data.fd];
+			int size = 0;
 			while (true) {
-				if ((ev_c = recv(events[i].data.fd, buffer, BUFFER_SIZE, 0)) == -1) {
+				index = buffer->reserve(CHUNK_SIZE);
+				if ((size = recv(events[i].data.fd, index, CHUNK_SIZE, 0)) == -1) {
 					if (errno == EAGAIN || errno == EWOULDBLOCK) {
+						buffer->commit(0);
 						break;
 					} else {
-						cout << "error recv " << events[i].data.fd << endl;
 						perror("recv");
 						exit(1);
 					}
 				}
-				total -= ev_c;
+				buffer->commit(size);
+			}
+			index = buffer->get(size);
+			while (size > 0) {
+				int start, end;
+				if (Order::check(index, size, start, end)) {
+					order->rsize = end - start + 1;
+					memcpy(order->raw, index + start, order->rsize);
+					if (order->parse() == -1) {
+						cout << "order parse fail" << endl;
+						exit(1);
+					}
+					buffer->release(end);
+					total--;
+					/* cout << dec << total << " orders remain" << endl; */
+				} else {
+					if (end != 0) {
+						cout << dec << end << " bytes unknown" << endl;
+						Util::print_array(index, end);
+					}
+					buffer->release(end);
+					if (end == 0) {
+						break;
+					}
+				}
+				size -= end;
+				index += end;
 			}
 		}
 	}
@@ -94,16 +131,7 @@ int main() {
 	usleep(10000);
 	// connect to server
 	int fds[C];
-	int **sizes;
-	char msg[50];
-	char buf[20];
-	Random rnd(301);
-	sizes = new int*[C]();
 	for (int i = 0; i < C; i++) {
-		sizes[i] = new int[N]();
-		for (int j = 0; j < N; j++) {
-			sizes[i][j] = rnd.next() % 10 + 10;
-		}
 		if ((fds[i] = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 			perror("socket");
 			exit(1);
@@ -120,14 +148,14 @@ int main() {
 	int epoll_fd = monitor_all(C, fds);
 	struct timeval start, end;
 	gettimeofday(&start, NULL);
-	thread send_thread(send_all, C, N, fds, sizes);
-	thread recv_thread(recv_all, epoll_fd, C, N, fds, sizes);
+	thread send_thread(send_all, C, N, fds);
+	thread recv_thread(recv_all, epoll_fd, C, N, fds);
 	send_thread.join();
 	recv_thread.join();
 	gettimeofday(&end, NULL);
 	double use_time = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / (double)MILLION;
 	cout << "Process " << C * N << " operations" << endl;
 	cout << "Use time: " << use_time << " s" << endl;
-	cout << "ops: " << (long)(C * N / use_time) << endl;
+	cout << "ops: " << dec << (long)(C * N / use_time) << endl;
 	return 0;
 }

@@ -1,4 +1,7 @@
+#include <iostream>
 #include "util.h"
+
+using namespace std;
 
 int Util::bitcount(unsigned int v) {
 	v = v - ((v >> 1) & 0x55555555);
@@ -14,4 +17,11 @@ int Util::checksum(char *data, int n) {
 		sum &= 0xFF;
 	}
 	return sum;
+}
+
+void Util::print_array(char *data, int n) {
+	for (int i = 0; i < n; i++) {
+		cout << hex << " " << ((uint8_t)data[i] & 0xFF);
+	}
+	cout << endl;
 }

@@ -17,7 +17,6 @@ private:
 	unsigned int id;
 	unsigned char station_number;
 	unsigned short seat_number;
-	unsigned char _height;
 	unordered_map<unsigned int, Order> *orders;
 	unsigned char **pool;
 };

@@ -1,7 +1,9 @@
 #include "server.h"
 
 Server::Server(const char* host_, int port_) : host(host_), port(port_) {
-	ring = new RingBuffer<Order>(1024);
+	sequencer = new Sequencer(65536);
+	ring = new RingBuffer<Order>(sequencer);
+	train = new Train(0, 128, 512);
 }
 
 void Server::start(int backlog) {
@@ -37,11 +39,14 @@ void Server::start(int backlog) {
 		cout << "error when add listen_fd to epoll: " << errno << endl;;
 		exit(1);
 	}
-	handle_events();
+	connection_handler = new thread(bind(&Server::handle_connections, this));
+	order_handler = new thread(bind(&Server::handle_orders, this));
+	connection_handler->detach();
+	order_handler->detach();
 }
 
-void Server::handle_events() {
-	while (!stopped) {
+void Server::handle_connections() {
+	while (true) {
 		int n;
 		if ((n = epoll_wait(epoll_fd, events, MAX_EPOLL_EVENTS, -1)) == -1) {
 			cout << "error when epoll wait: " << errno << endl;;
@@ -98,4 +103,42 @@ void Server::receive_data(int fd) {
 	}
 	Connection *connection = pair->second;
 	connection->handle(ring);
+}
+
+void Server::handle_orders() {
+	Order *order;
+	int n;
+	long sequence = 0;
+	while (true) {
+		n = ring->wait_for(sequence);
+		for (int i = sequence; i <= n; i++) {
+			order = ring->get(i);
+			switch (order->operation) {
+			case 0x01:
+				train->query(order);
+				break;
+			case 0x02:
+				train->book(order);
+				break;
+			case 0x03:
+				train->check(order);
+				break;
+			case 0x04:
+				train->refund(order);
+				break;
+			default:
+				cout << "unknown operation " << hex << order->operation << endl;
+				exit(1);
+			}
+			if (order->dump() == -1) {
+				cout << "order dump fail" << endl;
+				exit(1);
+			}
+			if (send(order->socket_fd, order->raw, order->rsize, 0) == -1) {
+				perror("send order result");
+				exit(1);
+			}
+		}
+		sequence = n + 1;
+	}
 }

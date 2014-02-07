@@ -1,7 +1,9 @@
 CXXFLAGS=-O2 -std=c++0x -g -c -Wall -pthread
 
-SRCS = util.cc train.cc bipbuffer.cc connection.cc order.cc server.cc
+SRCS = util.cc train.cc bipbuffer.cc connection.cc order.cc server.cc sequence.cc sequencer.cc
 OBJS = $(SRCS:.cc=.o)
+
+TESTS = test_util test_train test_order test_ringbuffer test_bipbuffer test_server
 
 all: $(OBJS) test benchmark
 
@@ -23,6 +25,9 @@ test_bipbuffer: $(OBJS) test_bipbuffer.o
 test_server: $(OBJS) test_server.o
 	g++ -pthread -o test_server test_server.o $(OBJS)
 
+benchmark: $(OBJS) benchmark.o
+	g++ -pthread -o benchmark benchmark.o $(OBJS)
+
 benchmark_train: $(OBJS) benchmark_train.o
 	g++ -o benchmark_train benchmark_train.o $(OBJS)
 
@@ -35,10 +40,10 @@ benchmark_ringbuffer: $(OBJS) benchmark_ringbuffer.o
 benchmark_server: $(OBJS) benchmark_server.o
 	g++ -pthread -o benchmark_server benchmark_server.o $(OBJS)
 
-tests: test_util test_train test_order test_ringbuffer test_bipbuffer test_server
+tests: $(TESTS)
 	for test in $^ ; do \
 	    ./$$test ; \
 	done
 
 clean:
-	rm -f $(OBJS) $(TESTS)
+	rm -f $(TESTS) *.o

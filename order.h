@@ -6,6 +6,8 @@
 
 using namespace std;
 
+#define RAW_SIZE 20
+
 class Order {
 public:
 	unsigned char operation;
@@ -13,8 +15,10 @@ public:
 	unsigned char from;
 	unsigned char to;
 	short seat;
+	char raw[RAW_SIZE];
+	int rsize;
 	int socket_fd;
-	int parse(char *raw, int size);
-	int dump(char *buffer, int size);
+	int parse();
+	int dump();
 	static bool check(char *raw, int size, int &start, int &end);
 };
