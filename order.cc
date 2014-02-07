@@ -78,38 +78,42 @@ bool Order::check(char *raw, int size, int &start, int &end) {
 	return true;
 }
 
-// return bytes used
 int Order::parse() {
+	return parse(raw, RAW_SIZE);
+}
+
+// return bytes used
+int Order::parse(char *buffer, int size) {
 	int index = 0;
-	while ((uint8_t)raw[index] == 0xF6) {
+	while ((uint8_t)buffer[index] == 0xF6) {
 		index++;
 	}
 	int psize;
-	if ((psize = Util::parse<unsigned char>(raw + index, RAW_SIZE - index, operation, 1)) == -1) {
+	if ((psize = Util::parse<unsigned char>(buffer + index, size - index, operation, 1)) == -1) {
 		cout << "parse operation fail" << endl;
 		return -1;
 	} else {
 		index += psize;
 	}
-	if ((psize = Util::parse<unsigned int>(raw + index, RAW_SIZE - index, id, 4)) == -1) {
+	if ((psize = Util::parse<unsigned int>(buffer + index, size - index, id, 4)) == -1) {
 		cout << "parse id fail" << endl;
 		return -1;
 	} else {
 		index += psize;
 	}
-	if ((psize = Util::parse<unsigned char>(raw + index, RAW_SIZE - index, from, 1)) == -1) {
+	if ((psize = Util::parse<unsigned char>(buffer + index, size - index, from, 1)) == -1) {
 		cout << "parse from fail" << endl;
 		return -1;
 	} else {
 		index += psize;
 	}
-	if ((psize = Util::parse<unsigned char>(raw + index, RAW_SIZE - index, to, 1)) == -1) {
+	if ((psize = Util::parse<unsigned char>(buffer + index, size - index, to, 1)) == -1) {
 		cout << "parse to fail" << endl;
 		return -1;
 	} else {
 		index += psize;
 	}
-	if ((psize = Util::parse<short>(raw + index, RAW_SIZE - index, seat, 2)) == -1) {
+	if ((psize = Util::parse<short>(buffer + index, size - index, seat, 2)) == -1) {
 		cout << "parse seat fail" << endl;
 		return -1;
 	} else {

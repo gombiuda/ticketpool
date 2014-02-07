@@ -16,9 +16,11 @@ using namespace std;
 class Connection {
 public:
 	Connection(int fd);
-	BipBuffer *buffer;
+	BipBuffer *in, *out;
 	void handle(RingBuffer<Order> *ring);
+	void flush();
 	void close_connection();
 private:
 	int fd;
+	double use_time;
 };

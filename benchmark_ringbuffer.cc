@@ -9,8 +9,7 @@
 
 using namespace std;
 
-static long N = 1 << 24;
-
+#define N 65535
 #define STATION_N 128
 #define SEAT_N 2048
 #define MILLION 1000000
@@ -31,19 +30,22 @@ void produce(RingBuffer<Order> *ring, int n) {
 }
 
 void consume(RingBuffer<Order> *ring, int n) {
-	long sequence = -1, count = 0;
+	long sequence = 0;
 	Random rnd(301);
 	Order *order;
-	while (count < n) {
-		sequence++;
+	while (n > 0) {
 		long hi = ring->wait_for(sequence);
 		long lo = sequence;
 		for (int i = lo; i <= hi; i++) {
 			order = ring->get(i);
 			order->seat = rnd.next() % SEAT_N;
+			if (order->dump() == -1) {
+				cout << "order dump fail" << endl;
+				exit(1);
+			}
 		}
-		count += hi - lo + 1;
-		sequence = hi;
+		n -= hi - lo + 1;
+		sequence = hi + 1;
 	}
 }
 

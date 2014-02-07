@@ -8,6 +8,8 @@ using namespace std;
 
 #define RAW_SIZE 20
 
+class Connection;
+
 class Order {
 public:
 	unsigned char operation;
@@ -17,8 +19,10 @@ public:
 	short seat;
 	char raw[RAW_SIZE];
 	int rsize;
-	int socket_fd;
+	Connection *connection;
+	char padding[14];
 	int parse();
+	int parse(char *buffer, int size);
 	int dump();
 	static bool check(char *raw, int size, int &start, int &end);
 };

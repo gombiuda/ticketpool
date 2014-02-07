@@ -44,8 +44,8 @@ int monitor_all(int c, int *fds) {
 void send_all(int c, int n, int *fds) {
 	Order order;
 	Random rnd(301);
-	for (int i = 0; i < c; i++) {
-		for (int j = 0; j < n; j++) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < c; j++) {
 			if (rnd.OneIn(3)) {
 				order.operation = 0x02;
 			} else {
@@ -56,7 +56,7 @@ void send_all(int c, int n, int *fds) {
 			order.to = rnd.next() % 128 + order.from;
 			order.seat = -1;
 			order.dump();
-			if (send(fds[i], order.raw, order.rsize, 0) == -1) {
+			if (send(fds[j], order.raw, order.rsize, 0) == -1) {
 				perror("send");
 				exit(1);
 			}
@@ -100,15 +100,12 @@ void recv_all(int epoll_fd, int c, int n, int *fds) {
 			while (size > 0) {
 				int start, end;
 				if (Order::check(index, size, start, end)) {
-					order->rsize = end - start + 1;
-					memcpy(order->raw, index + start, order->rsize);
-					if (order->parse() == -1) {
+					if (order->parse(index + start, end - start + 1) == -1) {
 						cout << "order parse fail" << endl;
 						exit(1);
 					}
 					buffer->release(end);
 					total--;
-					/* cout << dec << total << " orders remain" << endl; */
 				} else {
 					if (end != 0) {
 						cout << dec << end << " bytes unknown" << endl;

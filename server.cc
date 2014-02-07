@@ -75,7 +75,7 @@ void Server::accept_connection() {
 		exit(1);
 	}
 	connections.insert(make_pair(connect_fd, new Connection(connect_fd)));
-	ev.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
+	ev.events = EPOLLIN | EPOLLRDHUP;
 	ev.data.fd = connect_fd;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, connect_fd, &ev) == -1) {
 		connections.erase(connect_fd);
@@ -108,6 +108,7 @@ void Server::receive_data(int fd) {
 void Server::handle_orders() {
 	Order *order;
 	int n;
+	char *index;
 	long sequence = 0;
 	while (true) {
 		n = ring->wait_for(sequence);
@@ -134,10 +135,17 @@ void Server::handle_orders() {
 				cout << "order dump fail" << endl;
 				exit(1);
 			}
-			if (send(order->socket_fd, order->raw, order->rsize, 0) == -1) {
-				perror("send order result");
+			index = order->connection->out->reserve(order->rsize);
+			if (index == nullptr) {
+				perror("reserve error");
 				exit(1);
 			}
+			memcpy(index, order->raw, order->rsize);
+			order->connection->out->commit(order->rsize);
+		}
+		for (int i = sequence; i <=n; i++) {
+			order = ring->get(i);
+			order->connection->flush();
 		}
 		sequence = n + 1;
 	}

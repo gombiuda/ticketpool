@@ -31,6 +31,9 @@ benchmark: $(OBJS) benchmark.o
 benchmark_sequence: $(OBJS) benchmark_sequence.o
 	g++ -pthread -o benchmark_sequence benchmark_sequence.o $(OBJS)
 
+benchmark_order: $(OBJS) benchmark_order.o
+	g++ -o benchmark_order benchmark_order.o $(OBJS)
+
 benchmark_train: $(OBJS) benchmark_train.o
 	g++ -o benchmark_train benchmark_train.o $(OBJS)
 
