@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <unordered_map>
 #include <thread>
+#include <omp.h>
 #include "connection.h"
 #include "ringbuffer.h"
 #include "sequencer.h"

@@ -1,4 +1,4 @@
-CXXFLAGS=-O2 -std=c++0x -g -c -Wall -pthread
+CXXFLAGS=-O2 -std=c++0x -g -c -Wall -pthread -fopenmp
 
 SRCS = util.cc train.cc bipbuffer.cc connection.cc order.cc server.cc sequence.cc sequencer.cc
 OBJS = $(SRCS:.cc=.o)
@@ -26,7 +26,7 @@ test_server: $(OBJS) test_server.o
 	g++ -pthread -o test_server test_server.o $(OBJS)
 
 benchmark: $(OBJS) benchmark.o
-	g++ -pthread -o benchmark benchmark.o $(OBJS)
+	g++ -pthread -fopenmp -o benchmark benchmark.o $(OBJS)
 
 benchmark_sequence: $(OBJS) benchmark_sequence.o
 	g++ -pthread -o benchmark_sequence benchmark_sequence.o $(OBJS)

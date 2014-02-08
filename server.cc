@@ -143,9 +143,9 @@ void Server::handle_orders() {
 			memcpy(index, order->raw, order->rsize);
 			order->connection->out->commit(order->rsize);
 		}
+		/* #pragma omp parallel for */
 		for (int i = sequence; i <=n; i++) {
-			order = ring->get(i);
-			order->connection->flush();
+			ring->get(i)->connection->flush();
 		}
 		sequence = n + 1;
 	}
