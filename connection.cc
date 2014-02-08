@@ -8,7 +8,7 @@ Connection::Connection(int fd_) : fd(fd_) {
 	out = new BipBuffer(BUFFER_SIZE);
 }
 
-void Connection::handle(RingBuffer<Order> *ring) {
+void Connection::handle(RingBuffer<Order> *ring, Train *train) {
 	char *index_in, *index_out;
 	int n;
 	Order *order;
@@ -48,13 +48,34 @@ void Connection::handle(RingBuffer<Order> *ring) {
 			}
 			order->connection = this;
 			/* // test-start */
-			/* index_out = out->reserve(end - start + 1); */
+			/* switch (order->operation) { */
+			/* case 0x01: */
+			/* 	train->query(order); */
+			/* 	break; */
+			/* case 0x02: */
+			/* 	train->book(order); */
+			/* 	break; */
+			/* case 0x03: */
+			/* 	train->check(order); */
+			/* 	break; */
+			/* case 0x04: */
+			/* 	train->refund(order); */
+			/* 	break; */
+			/* default: */
+			/* 	cout << "unknown operation " << hex << order->operation << endl; */
+			/* 	exit(1); */
+			/* } */
+			/* if (order->dump() == -1) { */
+			/* 	cout << "order dump fail" << endl; */
+			/* 	exit(1); */
+			/* } */
+			/* index_out = out->reserve(order->rsize); */
 			/* if (index_out == nullptr) { */
 			/* 	perror("in reserve error"); */
 			/* 	exit(1); */
 			/* } */
-			/* memcpy(index_out, index_in + start, end - start + 1); */
-			/* out->commit(end - start + 1); */
+			/* memcpy(index_out, order->raw, order->rsize); */
+			/* out->commit(order->rsize); */
 			/* // test-end */
 			in->release(end);
 			count++;

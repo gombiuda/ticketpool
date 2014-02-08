@@ -102,7 +102,7 @@ void Server::receive_data(int fd) {
 		exit(1);
 	}
 	Connection *connection = pair->second;
-	connection->handle(ring);
+	connection->handle(ring, train);
 }
 
 void Server::handle_orders() {
